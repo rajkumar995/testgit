@@ -1,0 +1,940 @@
+{
+	"info": {
+		"_postman_id": "hospital-api-collection-2024",
+		"name": "Hospital Management API",
+		"description": "Complete API collection for Hospital Management System. All endpoints are hospital-scoped and require authentication.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{accessToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "hospitalId",
+			"value": "1",
+			"type": "string",
+			"description": "Replace with your hospital ID (extracted from JWT token after login)"
+		},
+		{
+			"key": "accessToken",
+			"value": "",
+			"type": "string",
+			"description": "JWT access token (auto-set after login)"
+		},
+		{
+			"key": "refreshToken",
+			"value": "",
+			"type": "string",
+			"description": "Refresh token (auto-set after login)"
+		}
+	],
+	"item": [
+		{
+			"name": "1. Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.collectionVariables.set('accessToken', response.accessToken);",
+									"    pm.collectionVariables.set('refreshToken', response.refreshToken);",
+									"    ",
+									"    // Extract hospitalId from JWT token",
+									"    const tokenParts = response.accessToken.split('.');",
+									"    if (tokenParts.length === 3) {",
+									"        const payload = JSON.parse(atob(tokenParts[1]));",
+									"        if (payload.hospitalId || payload.hospital_id) {",
+									"            pm.collectionVariables.set('hospitalId', payload.hospitalId || payload.hospital_id);",
+									"        }",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"hospital_admin@example.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login with username and password. Returns JWT access token and refresh token. Hospital ID is automatically extracted from JWT token."
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"refreshToken\": \"{{refreshToken}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/refresh-token",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"refresh-token"
+							]
+						},
+						"description": "Refresh access token using refresh token. Returns new access token."
+					},
+					"response": []
+				},
+				{
+					"name": "Reset Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"hospital_admin@example.com\",\n    \"oldPassword\": \"oldPassword123\",\n    \"newPassword\": \"newPassword123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/reset-password",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"reset-password"
+							]
+						},
+						"description": "Reset user password. Requires old password and new password."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Patients (Hospital-Scoped)",
+			"item": [
+				{
+					"name": "Get All Patients",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/hospitals/{{hospitalId}}/patients",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"hospitals",
+								"{{hospitalId}}",
+								"patients"
+							]
+						},
+						"description": "Get all patients for your hospital. HOSPITAL_ADMIN can only view patients from their own hospital."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Patient by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/hospitals/{{hospitalId}}/patients/:hospitalPatientId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"hospitals",
+								"{{hospitalId}}",
+								"patients",
+								":hospitalPatientId"
+							],
+							"variable": [
+								{
+									"key": "hospitalPatientId",
+									"value": "1",
+									"description": "Hospital Patient ID"
+								}
+							]
+						},
+						"description": "Get patient details by hospital patient ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Patient by Phone",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/hospitals/{{hospitalId}}/patients/phone/:phone",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"hospitals",
+								"{{hospitalId}}",
+								"patients",
+								"phone",
+								":phone"
+							],
+							"variable": [
+								{
+									"key": "phone",
+									"value": "9876543210",
+									"description": "Patient phone number"
+								}
+							]
+						},
+						"description": "Get patient by phone number. If patient doesn't exist, returns 404."
+					},
+					"response": []
+				},
+				{
+					"name": "Register/Create Patient",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"fullName\": \"John Doe\",\n    \"phone\": \"9876543210\",\n    \"email\": \"john.doe@example.com\",\n    \"aadharId\": \"123456789012\",\n    \"abhaId\": \"ABHA123456\",\n    \"dateOfBirth\": \"1990-01-15\",\n    \"gender\": \"MALE\",\n    \"address\": {\n        \"street\": \"123 Main Street\",\n        \"city\": \"Mumbai\",\n        \"state\": \"Maharashtra\",\n        \"pincode\": \"400001\",\n        \"country\": \"India\"\n    },\n    \"emergencyContacts\": [\n        {\n            \"personName\": \"Jane Doe\",\n            \"phone\": \"9876543211\",\n            \"relationship\": \"Spouse\"\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/hospitals/{{hospitalId}}/patients",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"hospitals",
+								"{{hospitalId}}",
+								"patients"
+							]
+						},
+						"description": "Register a new patient for your hospital. If global patient exists with same phone/email, links to it. Otherwise creates UNCLAIMED global patient."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Patient",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"fullName\": \"John Doe Updated\",\n    \"phone\": \"9876543210\",\n    \"email\": \"john.doe.updated@example.com\",\n    \"aadharId\": \"123456789012\",\n    \"abhaId\": \"ABHA123456\",\n    \"dateOfBirth\": \"1990-01-15\",\n    \"gender\": \"MALE\",\n    \"address\": {\n        \"street\": \"456 Updated Street\",\n        \"city\": \"Mumbai\",\n        \"state\": \"Maharashtra\",\n        \"pincode\": \"400001\",\n        \"country\": \"India\"\n    },\n    \"emergencyContacts\": [\n        {\n            \"personName\": \"Jane Doe Updated\",\n            \"phone\": \"9876543211\",\n            \"relationship\": \"Spouse\"\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/hospitals/{{hospitalId}}/patients/:hospitalPatientId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"hospitals",
+								"{{hospitalId}}",
+								"patients",
+								":hospitalPatientId"
+							],
+							"variable": [
+								{
+									"key": "hospitalPatientId",
+									"value": "1",
+									"description": "Hospital Patient ID"
+								}
+							]
+						},
+						"description": "Update patient information. HOSPITAL_ADMIN can only update patients from their own hospital."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete/Deactivate Patient",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/hospitals/{{hospitalId}}/patients/:hospitalPatientId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"hospitals",
+								"{{hospitalId}}",
+								"patients",
+								":hospitalPatientId"
+							],
+							"variable": [
+								{
+									"key": "hospitalPatientId",
+									"value": "1",
+									"description": "Hospital Patient ID"
+								}
+							]
+						},
+						"description": "Deactivate a patient. HOSPITAL_ADMIN can only deactivate patients from their own hospital."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Doctors (Hospital-Scoped)",
+			"item": [
+				{
+					"name": "Get All Doctors by Hospital",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/doctors/hospital/{{hospitalId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"doctors",
+								"hospital",
+								"{{hospitalId}}"
+							]
+						},
+						"description": "Get all doctors for your hospital. Returns doctors with role-based filtering."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Doctor by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/doctors/:doctorId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"doctors",
+								":doctorId"
+							],
+							"variable": [
+								{
+									"key": "doctorId",
+									"value": "1",
+									"description": "Doctor ID"
+								}
+							]
+						},
+						"description": "Get doctor details by ID with role-based filtering."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Doctor",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"hospitalId\": {{hospitalId}},\n    \"name\": \"Dr. Jane Smith\",\n    \"title\": \"MD\",\n    \"specialization\": \"Cardiology\",\n    \"qualification\": \"MBBS, MD\",\n    \"experience\": 10,\n    \"consultationFee\": 500.00,\n    \"about\": \"Experienced cardiologist\",\n    \"services\": [\"ECG\", \"Echo\", \"Stress Test\"],\n    \"expertise\": [\"Heart Disease\", \"Hypertension\"],\n    \"language\": [\"English\", \"Hindi\"],\n    \"awards\": [\"Best Doctor 2020\"],\n    \"phone\": \"9876543210\",\n    \"email\": \"dr.jane@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/doctors",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"doctors"
+							]
+						},
+						"description": "Create a new doctor. HOSPITAL_ADMIN can only create doctors for their own hospital (hospitalId is auto-set from JWT token)."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Doctor",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"hospitalId\": {{hospitalId}},\n    \"name\": \"Dr. Jane Smith Updated\",\n    \"title\": \"MD, DM\",\n    \"specialization\": \"Cardiology\",\n    \"qualification\": \"MBBS, MD, DM\",\n    \"experience\": 12,\n    \"consultationFee\": 600.00,\n    \"about\": \"Senior cardiologist with extensive experience\",\n    \"services\": [\"ECG\", \"Echo\", \"Stress Test\", \"Holter\"],\n    \"expertise\": [\"Heart Disease\", \"Hypertension\", \"Arrhythmia\"],\n    \"language\": [\"English\", \"Hindi\", \"Marathi\"],\n    \"awards\": [\"Best Doctor 2020\", \"Excellence Award 2022\"],\n    \"phone\": \"9876543210\",\n    \"email\": \"dr.jane@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/doctors/:doctorId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"doctors",
+								":doctorId"
+							],
+							"variable": [
+								{
+									"key": "doctorId",
+									"value": "1",
+									"description": "Doctor ID"
+								}
+							]
+						},
+						"description": "Update doctor details. HOSPITAL_ADMIN can only update doctors from their own hospital."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4. Bookings (Hospital-Scoped)",
+			"item": [
+				{
+					"name": "Get All Bookings by Hospital",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/bookings/hospital/{{hospitalId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bookings",
+								"hospital",
+								"{{hospitalId}}"
+							]
+						},
+						"description": "Get all bookings for your hospital. HOSPITAL_ADMIN can only view bookings from their own hospital."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Booking by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/bookings/:bookingId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bookings",
+								":bookingId"
+							],
+							"variable": [
+								{
+									"key": "bookingId",
+									"value": "1",
+									"description": "Booking ID"
+								}
+							]
+						},
+						"description": "Get booking details by ID with role-based filtering."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Bookings by Doctor",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/bookings/doctor/:doctorId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bookings",
+								"doctor",
+								":doctorId"
+							],
+							"variable": [
+								{
+									"key": "doctorId",
+									"value": "1",
+									"description": "Doctor ID"
+								}
+							]
+						},
+						"description": "Get all bookings for a specific doctor."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Booking (Hospital Staff)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"hospitalId\": {{hospitalId}},\n    \"doctorId\": 1,\n    \"bookingDate\": \"2024-12-20\",\n    \"bookingTime\": \"10:00\",\n    \"phoneNumber\": \"9876543210\",\n    \"dataConsent\": true,\n    \"payment\": {\n        \"paymentMode\": \"CASH\",\n        \"totalBill\": 500.00,\n        \"totalAmount\": 500.00,\n        \"discount\": 0.00,\n        \"taxableAmount\": 500.00,\n        \"gst\": 0.00,\n        \"transactionId\": null\n    }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/bookings/hospital/{{hospitalId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bookings",
+								"hospital",
+								"{{hospitalId}}"
+							]
+						},
+						"description": "Create a new booking for a patient. Requires phoneNumber. Creates/gets hospital patient if needed. HOSPITAL_ADMIN can only create bookings for their own hospital."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "5. Hospital Info",
+			"item": [
+				{
+					"name": "Get Hospital Details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/hospitals/{{hospitalId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"hospitals",
+								"{{hospitalId}}"
+							]
+						},
+						"description": "Get hospital details by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Hospital Details",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"City Hospital\",\n    \"address\": \"123 Hospital Street\",\n    \"city\": \"Mumbai\",\n    \"state\": \"Maharashtra\",\n    \"pincode\": \"400001\",\n    \"phone\": \"022-12345678\",\n    \"email\": \"info@cityhospital.com\",\n    \"registrationNumber\": \"HOSP123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/hospitals/{{hospitalId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"hospitals",
+								"{{hospitalId}}"
+							]
+						},
+						"description": "Update hospital details. HOSPITAL_ADMIN can only update their own hospital."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "6. Staff Management",
+			"item": [
+				{
+					"name": "Get Assignable Roles",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/hospitals/{{hospitalId}}/staff/assignable-roles",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"hospitals",
+								"{{hospitalId}}",
+								"staff",
+								"assignable-roles"
+							]
+						},
+						"description": "Get list of all roles that can be assigned to staff (system roles: HOSPITAL_STAFF, DOCTOR + custom hospital roles). Returns roleId, roleName, roleType (SYSTEM/CUSTOM), description, and customRoleId."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "7. Hospital Custom Role Management",
+			"item": [
+				{
+					"name": "Create Custom Hospital Role",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"roleName\": \"Nurse\",\n    \"description\": \"Nursing staff role\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/hospitals/{{hospitalId}}/roles/custom",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"hospitals",
+								"{{hospitalId}}",
+								"roles",
+								"custom"
+							]
+						},
+						"description": "Create a new custom role for the hospital. HOSPITAL_ADMIN can create roles for their hospital. Role name must be unique within the hospital."
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Custom Hospital Roles",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/hospitals/{{hospitalId}}/roles/custom",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"hospitals",
+								"{{hospitalId}}",
+								"roles",
+								"custom"
+							]
+						},
+						"description": "Get all custom roles created by the hospital. Returns list of roles with their permissions."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Custom Hospital Role by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/hospitals/{{hospitalId}}/roles/custom/:customRoleId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"hospitals",
+								"{{hospitalId}}",
+								"roles",
+								"custom",
+								":customRoleId"
+							],
+							"variable": [
+								{
+									"key": "customRoleId",
+									"value": "1",
+									"description": "Custom Role ID"
+								}
+							]
+						},
+						"description": "Get a specific custom role with its permissions. HOSPITAL_ADMIN can only view roles from their own hospital."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Custom Hospital Role",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"roleName\": \"Senior Nurse\",\n    \"description\": \"Updated description for senior nursing staff\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/hospitals/{{hospitalId}}/roles/custom/:customRoleId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"hospitals",
+								"{{hospitalId}}",
+								"roles",
+								"custom",
+								":customRoleId"
+							],
+							"variable": [
+								{
+									"key": "customRoleId",
+									"value": "1",
+									"description": "Custom Role ID"
+								}
+							]
+						},
+						"description": "Update a custom role's name and description. HOSPITAL_ADMIN can only update roles from their own hospital."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Custom Hospital Role",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/hospitals/{{hospitalId}}/roles/custom/:customRoleId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"hospitals",
+								"{{hospitalId}}",
+								"roles",
+								"custom",
+								":customRoleId"
+							],
+							"variable": [
+								{
+									"key": "customRoleId",
+									"value": "1",
+									"description": "Custom Role ID"
+								}
+							]
+						},
+						"description": "Delete a custom role. All permissions associated with the role will also be deleted. HOSPITAL_ADMIN can only delete roles from their own hospital."
+					},
+					"response": []
+				},
+				{
+					"name": "Assign Permissions to Custom Role",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"permissions\": [\n        \"VIEW_QUEUE\",\n        \"VIEW_PATIENT\",\n        \"MANAGE_BOOKING\"\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/hospitals/{{hospitalId}}/roles/custom/:customRoleId/permissions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"hospitals",
+								"{{hospitalId}}",
+								"roles",
+								"custom",
+								":customRoleId",
+								"permissions"
+							],
+							"variable": [
+								{
+									"key": "customRoleId",
+									"value": "1",
+									"description": "Custom Role ID"
+								}
+							]
+						},
+						"description": "Assign permissions to a custom hospital role. Replaces all existing permissions with the new list. HOSPITAL_ADMIN can only manage permissions for their own hospital roles."
+					},
+					"response": []
+				},
+				{
+					"name": "Add Permission to Custom Role",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/hospitals/{{hospitalId}}/roles/custom/:customRoleId/permissions/:permission",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"hospitals",
+								"{{hospitalId}}",
+								"roles",
+								"custom",
+								":customRoleId",
+								"permissions",
+								":permission"
+							],
+							"variable": [
+								{
+									"key": "customRoleId",
+									"value": "1",
+									"description": "Custom Role ID"
+								},
+								{
+									"key": "permission",
+									"value": "VIEW_QUEUE",
+									"description": "Permission name (e.g., VIEW_QUEUE, VIEW_PATIENT, MANAGE_BOOKING, etc.)"
+								}
+							]
+						},
+						"description": "Add a single permission to a custom hospital role. HOSPITAL_ADMIN can only manage permissions for their own hospital roles."
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Permission from Custom Role",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/hospitals/{{hospitalId}}/roles/custom/:customRoleId/permissions/:permission",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"hospitals",
+								"{{hospitalId}}",
+								"roles",
+								"custom",
+								":customRoleId",
+								"permissions",
+								":permission"
+							],
+							"variable": [
+								{
+									"key": "customRoleId",
+									"value": "1",
+									"description": "Custom Role ID"
+								},
+								{
+									"key": "permission",
+									"value": "VIEW_QUEUE",
+									"description": "Permission name to remove"
+								}
+							]
+						},
+						"description": "Remove a permission from a custom hospital role. HOSPITAL_ADMIN can only manage permissions for their own hospital roles."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "8. Patient Reports (Hospital)",
+			"item": [
+				{
+					"name": "Get Patient Reports (Hospital Uploads)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/hospitals/{{hospitalId}}/patients/{{hospitalPatientId}}/reports",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "hospitals", "{{hospitalId}}", "patients", "{{hospitalPatientId}}", "reports"]
+						},
+						"description": "Get reports for a patient uploaded by this hospital only. HOSPITAL_ADMIN/HOSPITAL_STAFF. hospitalPatientId = hospital patient ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Report for Patient",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{"key": "file", "type": "file", "src": "", "description": "PDF/Image/DOC (required)"},
+								{"key": "reportType", "value": "BLOOD_TEST", "description": "BLOOD_TEST, XRAY, CT_SCAN, MRI, etc."},
+								{"key": "reportDate", "value": "2025-01-28", "description": "YYYY-MM-DD (required)"},
+								{"key": "doctorName", "value": "", "description": "Optional"},
+								{"key": "labName", "value": "", "description": "Optional"}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/hospitals/{{hospitalId}}/patients/{{hospitalPatientId}}/reports/upload",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "hospitals", "{{hospitalId}}", "patients", "{{hospitalPatientId}}", "reports", "upload"]
+						},
+						"description": "Upload a report for a patient (hospital staff). Report is linked to this hospital. Multipart: file, reportType, reportDate, doctorName (optional), labName (optional)."
+					},
+					"response": []
+				}
+			],
+			"description": "Hospital staff: list reports uploaded by this hospital for a patient, and upload new reports."
+		}
+	]
+}
+

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Booking Status · MediDropBox</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="theme-color" content="#6a5cff"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f9fbff 0%, #eef4ff 50%, #f0f4ff 100%);
+            color: #1e293b;
+            padding: 40px 8%;
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        /* CENTER MESSAGE */
+        .center-message {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        .center-message h1 {
+            font-size: clamp(26px, 5vw, 34px);
+            font-weight: 800;
+            color: #1e293b;
+            letter-spacing: -0.02em;
+        }
+        .center-message p {
+            color: #64748b;
+            margin-top: 6px;
+            font-size: clamp(14px, 2.5vw, 16px);
+        }
+        .wish {
+            margin-top: 8px;
+            font-weight: 600;
+            color: #16a34a;
+            font-size: clamp(13px, 2vw, 15px);
+        }
+
+        /* MAIN ROW: Queue card + App card */
+        .main-row {
+            display: flex;
+            gap: 35px;
+            flex-wrap: wrap;
+            margin-bottom: 60px;
+        }
+
+        /* QUEUE CARD */
+        .queue-card {
+            flex: 2;
+            min-width: 280px;
+            background: #ffffff;
+            padding: 45px;
+            border-radius: 28px;
+            box-shadow: 0 25px 60px rgba(106, 92, 255, 0.08);
+            border-left: 6px solid #6a5cff;
+        }
+        .queue-card h3 {
+            font-weight: 700;
+            color: #6a5cff;
+            font-size: 18px;
+        }
+        .live-count {
+            font-size: clamp(72px, 15vw, 110px);
+            font-weight: 800;
+            margin: 15px 0;
+            color: #6a5cff;
+            line-height: 1;
+            letter-spacing: -0.03em;
+        }
+        .status-box {
+            background: linear-gradient(135deg, #f4f6ff 0%, #eef2ff 100%);
+            padding: 22px;
+            border-radius: 18px;
+            margin-top: 10px;
+        }
+        .status-box p {
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 14px;
+            color: #334155;
+        }
+        .status-box p:last-child { margin-bottom: 0; }
+        .wait-time { color: #f59e0b; }
+
+        /* PREMIUM APP CARD */
+        .app-card {
+            flex: 1;
+            min-width: 280px;
+            background: #ffffff;
+            border-radius: 28px;
+            box-shadow: 0 25px 60px rgba(106, 92, 255, 0.07);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .app-visual {
+            background: linear-gradient(135deg, #6a5cff 0%, #7c3aed 100%);
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .app-visual img {
+            width: 120px;
+            filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.3));
+        }
+        .app-content {
+            padding: 30px;
+            position: relative;
+            min-height: 160px;
+        }
+        .slide {
+            position: absolute;
+            width: 100%;
+            left: 0;
+            right: 0;
+            padding-right: 20px;
+            opacity: 0;
+            transform: translateY(15px);
+            transition: all 0.6s ease;
+        }
+        .slide.active {
+            position: relative;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .slide h4 { font-size: 18px; margin-bottom: 6px; color: #1e293b; }
+        .slide p { font-size: 14px; color: #64748b; }
+        .store-btn {
+            margin: 25px;
+            padding: 14px;
+            border-radius: 14px;
+            background: #1e293b;
+            color: #fff !important;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .store-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+        .store-btn img { height: 28px; }
+
+        /* DETAILS GRID */
+        .details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+        .card {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 22px;
+            box-shadow: 0 15px 40px rgba(106, 92, 255, 0.06);
+        }
+        .card h4 {
+            margin-bottom: 12px;
+            color: #6a5cff;
+            font-size: 16px;
+            font-weight: 700;
+        }
+        .card p {
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #475569;
+        }
+        .card p:last-child { margin-bottom: 0; }
+        .card a {
+            color: #6a5cff;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .card a:hover { text-decoration: underline; }
+
+        /* HOSPITAL */
+        .hospital {
+            background: #ffffff;
+            padding: 45px;
+            border-radius: 28px;
+            box-shadow: 0 20px 50px rgba(106, 92, 255, 0.06);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            align-items: center;
+        }
+        .hospital-img-wrap {
+            flex: 1;
+            min-width: 260px;
+            max-width: 380px;
+        }
+        .hospital img {
+            width: 100%;
+            border-radius: 22px;
+            object-fit: cover;
+            height: 220px;
+        }
+        .hospital-info { flex: 1; min-width: 260px; }
+        .hospital-info h2 {
+            font-size: 22px;
+            color: #1e293b;
+            margin-bottom: 10px;
+        }
+        .hospital-info p {
+            margin-bottom: 6px;
+            font-size: 14px;
+            color: #64748b;
+        }
+        .hospital-info a {
+            color: #6a5cff;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .hospital-info a:hover { text-decoration: underline; }
+        .facilities {
+            margin-top: 16px;
+        }
+        .facilities span {
+            display: inline-block;
+            background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+            padding: 6px 14px;
+            border-radius: 20px;
+            margin: 5px 6px 0 0;
+            font-size: 13px;
+            font-weight: 600;
+            color: #4f46e5;
+        }
+
+        /* FOOTER */
+        .page-footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        @media (max-width: 900px) {
+            .main-row { flex-direction: column; }
+            body { padding: 24px 5%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="center-message">
+        <h1>Hello <span th:text="${booking?.patientName != null ? booking.patientName : 'there'}">Raja Ram</span> 👋</h1>
+        <p>Your appointment is confirmed with <strong th:text="${booking?.doctorName}">Dr. Aryan Mishra</strong>.</p>
+        <div class="wish">Wishing you good health and a smooth visit 🌿</div>
+    </div>
+
+    <div class="main-row">
+
+        <!-- QUEUE CARD -->
+        <div class="queue-card">
+            <h3>Live Patient Queue</h3>
+            <div class="live-count" th:text="${liveQueue?.currentServingQueueNumber != null ? liveQueue.currentServingQueueNumber : (booking?.queue?.queueNumber != null ? booking.queue.queueNumber : '—')}">8</div>
+            <div class="status-box">
+                <p th:if="${booking?.queue != null}">This booking's queue: <strong th:text="'#' + booking.queue.queueNumber">#8</strong></p>
+                <p th:if="${liveQueue?.totalWaiting != null}">Patients waiting: <strong th:text="${liveQueue.totalWaiting}">5</strong></p>
+                <p class="wait-time" th:if="${liveQueue?.estimatedWaitTime != null and liveQueue.estimatedWaitTime > 0}">Estimated waiting time: <strong th:text="${liveQueue.estimatedWaitTime + ' Minutes'}">15 Minutes</strong></p>
+                <p th:if="${liveQueue?.averageConsultationTime != null}">Average consultation: <strong th:text="${liveQueue.averageConsultationTime + ' Minutes'}">10 Minutes</strong></p>
+                <p th:if="${liveQueue == null and booking?.queue != null}">Status: <strong th:text="${booking.queue.status}">—</strong></p>
+            </div>
+        </div>
+
+        <!-- PREMIUM APP CARD -->
+        <div class="app-card">
+            <div class="app-visual">
+                <img src="https://cdn-icons-png.flaticon.com/512/2920/2920069.png" alt="App"/>
+            </div>
+            <div class="app-content">
+                <div class="slide active">
+                    <h4>Book Anytime, Anywhere</h4>
+                    <p>Schedule appointments easily from home without waiting in line.</p>
+                </div>
+                <div class="slide">
+                    <h4>Never Miss Your Reports</h4>
+                    <p>Access prescriptions, reports &amp; medical history instantly.</p>
+                </div>
+                <div class="slide">
+                    <h4>Real-Time Queue Tracking</h4>
+                    <p>Track live waiting status &amp; get notified when it's your turn.</p>
+                </div>
+            </div>
+            <a th:href="${appDownloadUrl != null ? appDownloadUrl : '#'}" class="store-btn" href="#">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Play Store"/>
+            </a>
+        </div>
+
+    </div>
+
+    <!-- BOOKING & PAYMENT DETAILS -->
+    <div class="details">
+
+        <div class="card">
+            <h4>Booking Details</h4>
+            <p th:if="${bookingDateFormatted != null}">Date: <span th:text="${bookingDateFormatted}">27 Apr 2024</span></p>
+            <p th:if="${bookingTimeFormatted != null}">Time: <span th:text="${bookingTimeFormatted}">08:35 AM</span></p>
+            <p th:if="${booking?.status != null}">Status: <strong th:text="${booking.status}">Paid</strong></p>
+            <p th:if="${booking?.hospitalName != null}">Hospital: <span th:text="${booking.hospitalName}">—</span></p>
+            <p th:if="${booking?.payment != null and booking.payment.invoiceUrl != null and !booking.payment.invoiceUrl.isEmpty()}">
+                <a th:href="${booking.payment.invoiceUrl}" target="_blank" rel="noopener">Download invoice</a>
+            </p>
+        </div>
+
+        <div class="card" th:if="${booking?.payment != null}">
+            <h4>Payment Details</h4>
+            <p>Total: <strong th:text="'₹' + ${booking.payment.totalAmount}">₹650</strong></p>
+            <p th:if="${booking.payment.gst != null and booking.payment.gst > 0}">GST: <span th:text="'₹' + ${booking.payment.gst}">₹150</span></p>
+            <p th:if="${booking.payment.paymentMode != null}">Mode: <span th:text="${booking.payment.paymentMode}">Cash</span></p>
+            <p th:if="${booking.payment.transactionId != null and !booking.payment.transactionId.isEmpty()}">Transaction ID: <span th:text="${booking.payment.transactionId}">—</span></p>
+        </div>
+
+    </div>
+
+    <!-- HOSPITAL -->
+    <div class="hospital" th:if="${booking != null}">
+
+        <div class="hospital-img-wrap" th:if="${hospitalDetails?.images != null and !hospitalDetails.images.isEmpty()}">
+            <img th:src="${hospitalDetails.images[0]}" alt="Hospital" src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=400" onerror="this.src='https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=400'"/>
+        </div>
+        <div class="hospital-img-wrap" th:if="${hospitalDetails?.images == null or hospitalDetails.images.isEmpty()}">
+            <img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=400" alt="Hospital"/>
+        </div>
+
+        <div class="hospital-info">
+            <h2 th:text="${hospitalDetails?.name != null ? hospitalDetails.name : booking.hospitalName}">GreenLife Hospital</h2>
+            <p th:if="${hospitalDetails?.address != null}">
+                <span th:text="${hospitalDetails.address.addressLine1}">123 Health Street</span><span th:if="${hospitalDetails.address.city}" th:text="', ' + ${hospitalDetails.address.city}">, City</span><span th:if="${hospitalDetails.address.pincode}" th:text="' - ' + ${hospitalDetails.address.pincode}"> - 560123</span>
+            </p>
+            <p th:if="${hospitalDetails?.emergencyCallNumber != null}">Emergency: <a th:href="|tel:${hospitalDetails.emergencyCallNumber}|" th:text="${hospitalDetails.emergencyCallNumber}">+91 9999999999</a></p>
+            <p th:if="${hospitalDetails?.bookingCallNumber != null}">Booking: <a th:href="|tel:${hospitalDetails.bookingCallNumber}|" th:text="${hospitalDetails.bookingCallNumber}">+91 9876543210</a></p>
+            <div class="facilities" th:if="${hospitalDetails != null and ((hospitalDetails.services != null and !hospitalDetails.services.isEmpty()) or (hospitalDetails.facilities != null and !hospitalDetails.facilities.isEmpty()))}">
+                <span th:each="svc : ${hospitalDetails.services != null ? hospitalDetails.services : {}}" th:text="${svc}">ICU</span>
+                <span th:each="fac : ${hospitalDetails.facilities != null ? hospitalDetails.facilities : {}}" th:text="${fac}">24x7 Emergency</span>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="page-footer">Shared with you · MediDropBox</div>
+
+    <script th:inline="javascript">
+        (function() {
+            var slides = document.querySelectorAll('.app-content .slide');
+            if (slides.length < 2) return;
+            var index = 0;
+            setInterval(function() {
+                slides[index].classList.remove('active');
+                index = (index + 1) % slides.length;
+                slides[index].classList.add('active');
+            }, 3500);
+        })();
+    </script>
+
+</body>
+</html>

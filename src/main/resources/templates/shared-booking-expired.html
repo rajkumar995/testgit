@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+    <meta name="theme-color" content="#991b1b"/>
+    <title>Link expired · MediDropBox</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet"/>
+    <style>
+        :root {
+            --bg: #fef2f2;
+            --card: #ffffff;
+            --accent: #991b1b;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --radius: 14px;
+            --shadow: 0 4px 24px rgba(153, 27, 27, 0.08);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { -webkit-text-size-adjust: 100%; }
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            min-height: 100dvh;
+            padding: clamp(12px, 3vw, 20px);
+            padding-bottom: env(safe-area-inset-bottom, 0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text);
+        }
+        .card {
+            width: 100%;
+            max-width: 400px;
+            background: var(--card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            text-align: center;
+            padding: clamp(24px, 6vw, 32px);
+        }
+        .icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 16px;
+            background: #fecaca;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+        }
+        h1 { font-size: clamp(16px, 4vw, 18px); font-weight: 800; color: var(--accent); margin-bottom: 10px; letter-spacing: -0.02em; }
+        p { font-size: clamp(13px, 2.5vw, 15px); color: var(--text-muted); line-height: 1.5; font-weight: 500; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="icon">⚠️</div>
+        <h1>Link expired or revoked</h1>
+        <p th:text="${message}">This link has expired or been revoked. Please ask your friend to share the booking with you again.</p>
+    </div>
+</body>
+</html>

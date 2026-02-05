@@ -1,0 +1,16 @@
+package com.medidropbox.repository;
+
+import com.medidropbox.entity.RolePermission;
+import com.medidropbox.enums.Permission;
+import com.medidropbox.enums.Role;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface RolePermissionRepository extends JpaRepository<RolePermission, Long> {
+    List<RolePermission> findByRole(Role role);
+    boolean existsByRoleAndPermission(Role role, Permission permission);
+    List<RolePermission> findByRoleIn(List<Role> roles);
+}
