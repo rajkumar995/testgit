@@ -10,14 +10,14 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class OtpVerifyRequest {
+public class OtpRetryRequest {
     @NotBlank(message = "Phone number is required")
     private String phone;
-    
-    @NotBlank(message = "OTP is required")
-    private String otp;
     
     /** Request ID from /generate response (required for Widget API). */
     @NotBlank(message = "Request ID is required")
     private String reqId;
+    
+    /** Optional retry channel (e.g. "sms", "voice"). */
+    private String retryChannel;
 }

@@ -43,15 +43,7 @@ public class SharedBookingViewController {
     public String viewSharedBooking(@PathVariable String codeOrToken, Model model) {
         try {
             String raw = codeOrToken != null ? codeOrToken.trim() : "";
-            // Short code: 8 alphanumeric (e.g. Ab12Xy45). Token: UUID with dashes (36 chars).
-            boolean isShortCode = raw.length() == 8 && !raw.contains("-");
-            BookingShareResponse data;
-            if (isShortCode) {
-                data = bookingShareService.getSharedBookingByShortCode(raw);
-            } else {
-                // Token (UUID) or legacy link — try token first
-                data = bookingShareService.getSharedBooking(raw);
-            }
+            BookingShareResponse data = bookingShareService.getSharedBookingByCodeOrToken(raw);
             model.addAttribute("share", data);
             model.addAttribute("booking", data.getBooking());
 

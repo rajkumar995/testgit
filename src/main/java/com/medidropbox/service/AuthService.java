@@ -8,7 +8,7 @@ import com.medidropbox.dto.response.UserResponse;
 
 public interface AuthService {
     LoginResponse login(LoginRequest request);
-    LoginResponse loginWithOtp(String phone, String otp);
+    LoginResponse loginWithOtp(String phone, String reqId, String otp);
     LoginResponse refreshToken(RefreshTokenRequest request);
     void resetPassword(ResetPasswordRequest request);
     UserResponse getCurrentUser(Long userId);

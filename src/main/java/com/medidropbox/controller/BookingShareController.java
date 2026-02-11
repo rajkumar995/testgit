@@ -3,6 +3,8 @@ package com.medidropbox.controller;
 import com.medidropbox.dto.request.BookingShareRequest;
 import com.medidropbox.dto.response.BookingShareResponse;
 import com.medidropbox.dto.response.ShareUrlResponse;
+
+import java.util.List;
 import com.medidropbox.security.MediDropBoxUserDetails;
 import com.medidropbox.service.BookingShareService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,17 +40,23 @@ public class BookingShareController {
         }
         return ResponseEntity.ok(bookingShareService.shareBooking(request, globalPatientId));
     }
-    
-    @GetMapping("/token/{shareToken}")
-    @Operation(summary = "Get shared booking by token", description = "Get booking details using share token (Public, legacy)")
-    public ResponseEntity<BookingShareResponse> getSharedBooking(@PathVariable String shareToken) {
-        return ResponseEntity.ok(bookingShareService.getSharedBooking(shareToken));
-    }
 
-    @GetMapping("/view/{shortCode}")
-    @Operation(summary = "Get shared booking by short code", description = "Get booking details using short code from URL (Public)")
-    public ResponseEntity<BookingShareResponse> getSharedBookingByShortCode(@PathVariable String shortCode) {
-        return ResponseEntity.ok(bookingShareService.getSharedBookingByShortCode(shortCode));
+    @GetMapping
+    @Operation(summary = "List my shared queues", description = "Get list of all booking shares (shared queues) created by the logged-in patient. Use to revoke any share via DELETE /{id}.")
+    @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("hasRole('PATIENT')")
+    public ResponseEntity<List<BookingShareResponse>> listMyShares(@AuthenticationPrincipal MediDropBoxUserDetails userDetails) {
+        Long globalPatientId = userDetails.getGlobalPatientId();
+        if (globalPatientId == null) {
+            throw new RuntimeException("Patient not linked to user account");
+        }
+        return ResponseEntity.ok(bookingShareService.listMyShares(globalPatientId));
+    }
+    
+    @GetMapping("/view/{codeOrToken}")
+    @Operation(summary = "Get shared booking (Public)", description = "Get booking details by share link. Pass either 8-char short code (e.g. Ab12Xy45) or UUID token. One API for same task.")
+    public ResponseEntity<BookingShareResponse> getSharedBookingByCodeOrToken(@PathVariable String codeOrToken) {
+        return ResponseEntity.ok(bookingShareService.getSharedBookingByCodeOrToken(codeOrToken));
     }
     
     @DeleteMapping("/{id}")

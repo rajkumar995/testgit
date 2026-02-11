@@ -12,7 +12,10 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class OtpResponse {
-    private String otp; // For development/testing - remove in production
     private String message;
     private Long expiresInSeconds; // OTP validity period
+    /** Phone number (client can use this for /verify). */
+    private String phone;
+    /** Request ID from MSG91 Widget API (required for /verify and /retry). */
+    private String reqId;
 }

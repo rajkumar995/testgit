@@ -17,8 +17,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -72,6 +74,12 @@ public class BookingShareServiceImpl implements BookingShareService {
         return ShareUrlResponse.builder().shareUrl(shareUrl).shortCode(shortCode).build();
     }
 
+    @Override
+    public List<BookingShareResponse> listMyShares(Long globalPatientId) {
+        List<BookingShare> shares = bookingShareRepository.findByBooking_GlobalPatient_IdOrderByCreatedAtDesc(globalPatientId);
+        return shares.stream().map(this::mapToResponse).collect(Collectors.toList());
+    }
+
     private String generateUniqueShortCode() {
         Random r = new Random();
         for (int i = 0; i < 20; i++) {
@@ -84,25 +92,25 @@ public class BookingShareServiceImpl implements BookingShareService {
     }
     
     @Override
-    public BookingShareResponse getSharedBooking(String shareToken) {
-        String token = shareToken != null ? shareToken.trim() : "";
-        BookingShare share = bookingShareRepository.findValidShareToken(token, LocalDateTime.now())
-                .orElseThrow(() -> new RuntimeException("Invalid or expired share token"));
-        return mapToResponse(share);
+    public BookingShareResponse getSharedBookingByCodeOrToken(String codeOrToken) {
+        String raw = codeOrToken != null ? codeOrToken.trim() : "";
+        if (raw.isEmpty()) {
+            throw new RuntimeException("Share link not found: Invalid code or token");
+        }
+        // Short code: 8 alphanumeric (e.g. Ab12Xy45). Token: UUID with dashes (36 chars).
+        boolean isShortCode = raw.length() == 8 && !raw.contains("-");
+        if (isShortCode) {
+            return getSharedBookingByShortCodeInternal(raw);
+        }
+        return getSharedBookingByTokenInternal(raw);
     }
 
-    @Override
-    public BookingShareResponse getSharedBookingByShortCode(String shortCode) {
-        if (shortCode == null || shortCode.isBlank()) {
-            throw new RuntimeException("Share link not found: Invalid short code");
-        }
+    private BookingShareResponse getSharedBookingByShortCodeInternal(String shortCode) {
         String normalized = shortCode.trim();
-        // First check if short code exists at all (even if expired/inactive); case-insensitive
         Optional<BookingShare> anyShare = bookingShareRepository.findByShortCodeIgnoreCase(normalized);
         if (anyShare.isEmpty()) {
             throw new RuntimeException("Share link not found: Invalid short code");
         }
-        // Then check if it's valid (active and not expired); case-insensitive
         BookingShare share = bookingShareRepository.findValidShortCode(normalized, LocalDateTime.now())
                 .orElseThrow(() -> {
                     BookingShare found = anyShare.get();
@@ -114,6 +122,12 @@ public class BookingShareServiceImpl implements BookingShareService {
                     }
                     return new RuntimeException("Share link is invalid");
                 });
+        return mapToResponse(share);
+    }
+
+    private BookingShareResponse getSharedBookingByTokenInternal(String shareToken) {
+        BookingShare share = bookingShareRepository.findValidShareToken(shareToken, LocalDateTime.now())
+                .orElseThrow(() -> new RuntimeException("Invalid or expired share token"));
         return mapToResponse(share);
     }
     

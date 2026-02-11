@@ -28,4 +28,8 @@ public interface BookingShareRepository extends JpaRepository<BookingShare, Long
     Optional<BookingShare> findValidShortCode(@Param("code") String code, @Param("now") LocalDateTime now);
 
     List<BookingShare> findByBookingId(Long bookingId);
+
+    /** All shares created by this patient (for "my shared queues" list). */
+    @Query("SELECT bs FROM BookingShare bs WHERE bs.booking.globalPatient.id = :globalPatientId ORDER BY bs.createdAt DESC")
+    List<BookingShare> findByBooking_GlobalPatient_IdOrderByCreatedAtDesc(@Param("globalPatientId") Long globalPatientId);
 }

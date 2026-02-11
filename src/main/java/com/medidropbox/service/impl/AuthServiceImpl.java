@@ -120,10 +120,10 @@ public class AuthServiceImpl implements AuthService {
     }
     
     @Override
-    public LoginResponse loginWithOtp(String phone, String otp) {
+    public LoginResponse loginWithOtp(String phone, String reqId, String otp) {
         try {
-            // Verify OTP
-            boolean otpValid = otpService.verifyOtp(phone, otp);
+            // Verify OTP (verifyOtp + verifyAccessToken via Widget API)
+            boolean otpValid = otpService.verifyOtp(reqId, otp);
             
             if (!otpValid) {
                 // AUDIT: Log failed OTP authentication
